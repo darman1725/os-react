@@ -12,6 +12,7 @@ jobs:
       - name: 'Start build job'
         run: |
           echo "Starting the build job"
+
       - name: 'Checkout'
         uses: actions/checkout@v2
 
@@ -34,6 +35,7 @@ jobs:
           echo "key_file=~/.oci/oci_api_key.pem" >> ~/.oci/config
           echo "${{secrets.OCI_KEY_FILE}}" >> ~/.oci/oci_api_key.pem
           echo "${{secrets.OCI_KEY_PUBLIC}}" >> ~/.oci/oci_api_key_public.pem
+
       - name: 'Install OCI CLI'
         run: |
           curl -L -O https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
@@ -41,10 +43,12 @@ jobs:
           ./install.sh --accept-all-defaults
           echo "/home/runner/bin" >> $GITHUB_PATH
           exec -l $SHELL
+
       - name: 'Fix Config File Permissions'
         run: |
           oci setup repair-file-permissions --file /home/runner/.oci/config
           oci setup repair-file-permissions --file /home/runner/.oci/oci_api_key.pem
+          
       - name: 'Deploy Into Object Storage'
         run: |
           oci os object bulk-delete  -bn ${{secrets.OCI_BUCKET}}  --prefix static --force
@@ -54,4 +58,3 @@ jobs:
           oci os object bulk-upload -bn ${{secrets.OCI_BUCKET}} --src-dir ./build --content-type text/javascript --include *.js --overwrite
           oci os object bulk-upload -bn ${{secrets.OCI_BUCKET}} --src-dir ./build --content-type text/css --include *.css --overwrite
           oci os object bulk-upload -bn ${{secrets.OCI_BUCKET}} --src-dir ./build --content-type text/plain --exclude *.js --exclude *.html --exclude *.jpg --exclude *.css --exclude ./build/manifest.json --overwrite
-
